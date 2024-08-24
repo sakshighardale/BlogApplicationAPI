@@ -9,13 +9,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.blog.exceptions.*;
+import com.blog.config.AppConstants;
 import com.blog.entities.Post;
+import com.blog.entities.Role;
 import com.blog.entities.User;
 import com.blog.payloads.UserDto;
 import com.blog.payloads.UserResponse;
+import com.blog.repositories.RoleRepo;
 import com.blog.repositories.UserRepo;
 import com.blog.services.UserService;
 
@@ -27,12 +31,18 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	@Override
 	public UserDto createUser(UserDto userDto) {
 		User user=this.dtoToUser(userDto);
 		User savedUser=this.userRepo.save(user);
 		return this.userToUserDto(savedUser);
 	}
+	
+	@Autowired
+	private RoleRepo roleRepo;
 
 	@Override
 	public UserDto updateUser(UserDto userDto, Integer userId) {
@@ -104,6 +114,19 @@ public class UserServiceImpl implements UserService {
 		UserDto userDto=this.modelMapper.map(user, UserDto.class);
 		
 		return userDto;
+	}
+
+	@Override
+	public UserDto registerNewUser(UserDto userDto) {
+		User user=this.modelMapper.map(userDto, User.class);
+		//below we have encoded the password
+		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+		
+		//managing roles
+		Role role=this.roleRepo.findById(AppConstants.NORMAL_USER).get();
+		user.getRoles().add(role);
+		User userNew=this.userRepo.save(user);
+		return this.modelMapper.map(userNew, UserDto.class);
 	}
 	
 }

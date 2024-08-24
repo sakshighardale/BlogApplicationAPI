@@ -9,4 +9,6 @@ public class AppConstants {
 	public static final String POST_SORT_BY = "addedDate";
 	public static final String USER_SORT_BY="id";
 	public static final String CATEGORY_SORT_BY="categoryId";
+	public static final Integer NORMAL_USER=2;
+	public static final Integer ADMIN_USER=1;
 }
